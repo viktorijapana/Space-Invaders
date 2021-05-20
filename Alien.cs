@@ -33,4 +33,9 @@ class Alien : Actor
 
     /*  -- ATTACK --  */
     public int GetPoints() => points;
+
+    public void SetIsAlive(bool state)
+    {
+        isAlive = state;
+    }
 }

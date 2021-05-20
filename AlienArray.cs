@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Drawing;
+using System.Diagnostics;
 using System.Windows.Forms;
 
 
@@ -6,31 +8,50 @@ class AlienArray
 {
     public readonly int rows;
     public readonly int columns;
-    readonly Alien[,] aliens;
-    readonly int space_x;                      // pixels between aliens horizontally
-    readonly int space_y;                      // pixels between aliens vertically
+    readonly Alien[,] block;
+    readonly Size screenSize;
+    readonly int spaceX;                       // pixels between aliens horizontally
+    readonly int spaceY;                       // pixels between aliens vertically
+    readonly (int width, int height) alienDimensions;
 
+
+    (float x, float y) start;
     (float x, float y) location;               // the location of the top-left corner of the block of aliens
     int direction;                             // 1 = right, -1 = left
-    int speed_x;                               // how fast the block moves horizontally
-    int speed_y;                               // how fast the block moves vertically
+    readonly int baseSpeed;                    // initial horizontal speed of the block
+    int speedX;                                // how fast the block moves horizontally
+    int speedY;                                // how fast the block moves vertically
+
+    int aliveAliens;                           // number of alive aliens in the array currently
+    int firstColumn;                           // the index of the first column that has at least one alien
+    int lastColumn;                            // the index of the last column that has at least one alien
+    int lastRow;                               // the index of the last row that has at least one alien
 
     readonly Timer moveTimer = new Timer();
 
-    public AlienArray((int x, int y) start)
+    public AlienArray(Size screenSize)
     {
-        rows = 5;
-        columns = 11;
-        aliens = new Alien[rows, columns];
-        space_x = 20;
-        space_y = 5;
+        rows = 2;
+        columns = 2;
+        block = new Alien[rows, columns];
+        this.screenSize = screenSize;
+        spaceX = 20;
+        spaceY = 5;
 
+        start = (0, 130);
         location = start;
         direction = 1;
-        speed_x = 15;
-        speed_y = 35;
+        baseSpeed = 15;
+        speedX = 15;
+        speedY = 35;
 
         FillArray();
+        alienDimensions = block[0, 0].GetDimensions();
+
+        aliveAliens = rows * columns;
+        firstColumn = 0;
+        lastColumn = columns - 1;
+        lastRow = rows - 1;
 
         moveTimer.Enabled = true;
         moveTimer.Interval = 700;
@@ -46,7 +67,7 @@ class AlienArray
 
     public Alien this[int i, int j]
     {
-        get => aliens[i, j];
+        get => block[i, j];
     }
 
 
@@ -60,16 +81,16 @@ class AlienArray
             for (int j = 0; j < columns; ++j)
             {
                 if (i == 0)
-                    aliens[i, j] = new Alien(Space_Invaders.Properties.Resources.alien30, (x, y), 30);
+                    block[i, j] = new Alien(Space_Invaders.Properties.Resources.alien30, (x, y), 30);
                 else if (i == 1 || i == 2)
-                    aliens[i, j] = new Alien(Space_Invaders.Properties.Resources.alien20, (x, y), 20);
+                    block[i, j] = new Alien(Space_Invaders.Properties.Resources.alien20, (x, y), 20);
                 else
-                    aliens[i, j] = new Alien(Space_Invaders.Properties.Resources.alien10, (x, y), 10);
+                    block[i, j] = new Alien(Space_Invaders.Properties.Resources.alien10, (x, y), 10);
 
-                x = x + aliens[0, j].GetDimensions().width + space_x;
+                x = x + block[0, j].GetDimensions().width + spaceX;
             }
 
-            y = y + aliens[0, 0].GetDimensions().height + space_y;
+            y = y + block[0, 0].GetDimensions().height + spaceY;
             x = 0;
         }
     }
@@ -77,23 +98,49 @@ class AlienArray
 
     public void Move()
     {
-        if (location.x + (direction * speed_x) <= 0 || location.x + (direction * speed_x) >= 350)
+        if ((location.x + (direction * speedX) <= (0 - (firstColumn * (alienDimensions.width + 2 * spaceX)))) || 
+            (location.x + (direction * speedX) >= (screenSize.Width - ((lastColumn + 3) * (alienDimensions.width)))))
         {
-            location.y += speed_y;
+            location.y += speedY;
             direction *= -1;
             for (int i = 0; i < rows; ++i)
                 for (int j = 0; j < columns; ++j)
-                    if (aliens[i, j] != null)
-                        aliens[i, j].Descend(speed_y);
+                    if (block[i, j].IsAlive())
+                        block[i, j].Descend(speedY);
         }
         else
         {
-            location.x += (direction * space_x);
+            location.x += (direction * spaceX);
             for (int i = 0; i < rows; ++i)
                 for (int j = 0; j < columns; ++j)
-                    if (aliens[i, j] != null)
-                        aliens[i, j].Move(direction, speed_x);
+                    if (block[i, j].IsAlive())
+                        block[i, j].Move(direction, speedX);
         }
+    }
+
+
+    bool IsFirstColumnDestroyed()
+    {
+        for (int i = 0; i < rows; ++i)
+            if (block[i, firstColumn].IsAlive())
+                return false;
+        return true;
+    }
+
+    bool IsLastColumnDestroyed()
+    {
+        for (int i = 0; i < rows; ++i)
+            if (block[i, lastColumn].IsAlive())
+                return false;
+        return true;
+    }
+
+    bool IsLastRowDestroyed()
+    {
+        for (int j = 0; j < columns; ++j)
+            if (block[lastRow, j].IsAlive())
+                return false;
+        return true;
     }
 
 
@@ -102,12 +149,24 @@ class AlienArray
     {
         for (int i = 0; i < rows; ++i)
             for (int j = 0; j < columns; ++j)
-                if (aliens[i, j] != null && aliens[i, j].IsHit(bullet))
+                if (block[i, j].IsAlive() && block[i, j].IsHit(bullet))
                 {
-                    Alien hitAlien = aliens[i, j];
-                    aliens[i, j] = null;
+                    Alien hitAlien = block[i, j];
+                    block[i, j].SetIsAlive(false);
+                    aliveAliens--;
+
+                    if (j == firstColumn && IsFirstColumnDestroyed())
+                        firstColumn++;
+
+                    if (j == lastColumn && IsLastColumnDestroyed())
+                        lastColumn--;
+
+                    if (i == lastRow && IsLastRowDestroyed())
+                        lastRow--;
+
                     return hitAlien;
                 }
+
         return null;
     }
 
@@ -123,8 +182,39 @@ class AlienArray
             randomX = rand.Next(rows - 1);
             randomY = rand.Next(columns - 1);
 
-            if (aliens[randomX, randomY] != null)
-                return aliens[randomX, randomY];
+            if (block[randomX, randomY].IsAlive())
+                return block[randomX, randomY];
         }
+    }
+
+
+    // returns true if the bottom existing row of the alien array touches the bottom of the screen
+    public bool IsAtBottom(Size screenSize)
+    {
+        for (int j = 0; j < columns; ++j)
+            if (block[lastRow, j].IsAlive() && block[lastRow, j].GetLocation().y + block[lastRow, j].GetDimensions().height == screenSize.Height)
+                return true;
+        return false;
+    }
+
+
+    // returns true if all the aliens in the array are destroyed
+    public bool IsDestroyed() => aliveAliens == 0;
+
+    // put the aliens back at the start of the new level
+    public void Reset()
+    {
+        moveTimer.Enabled = false;
+
+        speedX = baseSpeed;
+        location.x = start.x + 200;
+        location.y = start.y;
+        start = location;
+
+        for (int i = 0; i < rows; ++i)
+            for (int j = 0; j < columns; ++j)
+                block[i, j].SetIsAlive(true);
+
+        moveTimer.Enabled = true;
     }
 }

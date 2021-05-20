@@ -39,8 +39,8 @@ public class GameWindow : Form
         player.GameOver += GameOver;
         bullet = new Bullet();
         lazer = new Bullet();
-        aliens = new AlienArray((0, 130));
-        ship = new RandomShip();
+        aliens = new AlienArray(ClientSize);
+        ship = new RandomShip(ClientSize);
     }
 
     private void OnTick(object sender, EventArgs e)
@@ -63,20 +63,32 @@ public class GameWindow : Form
                 bullet.Destroy();
                 player.AddScore(hitAlien.GetPoints());
             }
+
+            if (ship.IsHit(bullet))
+            {
+                bullet.Destroy();
+                player.AddScore(ship.GetPoints());
+            }
         }
 
-        if (!lazer.IsAlive())
-            lazer.Shoot(aliens.GetAttackingAlien().GetMuzzleLocation());
+        //if (!lazer.IsAlive())
+        //    lazer.Shoot(aliens.GetAttackingAlien().GetMuzzleLocation());
 
-        if (lazer.IsAlive())
-        {
-            lazer.Move(1, ClientSize);
-            if (player.IsHit(lazer))
-                lazer.Destroy();
-        }
+        //if (lazer.IsAlive())
+        //{
+        //    lazer.Move(1, ClientSize);
+        //    if (player.IsHit(lazer))
+        //        lazer.Destroy();
+        //}
 
         if (ship.IsAlive())
             ship.Move();
+
+        if (aliens.IsDestroyed())
+            aliens.Reset();
+
+        if (!aliens.IsDestroyed() && aliens.IsAtBottom(ClientSize))
+            GameOver();
 
         Invalidate();       // redraw screen
     }
@@ -107,7 +119,7 @@ public class GameWindow : Form
     {
         for (int i = 0; i < aliens.rows; ++i)
             for (int j = 0; j < aliens.columns; ++j)
-                if (aliens[i, j] != null && aliens[i, j].IsAlive())
+                if (aliens[i, j].IsAlive())
                     g.DrawImage(aliens[i, j].GetSprite(), aliens[i, j].GetLocation().x, aliens[i, j].GetLocation().y,
                                 aliens[i, j].GetDimensions().width, aliens[i, j].GetDimensions().height);
     }
@@ -126,7 +138,6 @@ public class GameWindow : Form
         // draw the player
         g.DrawImage(player.GetSprite(), player.GetLocation().x, player.GetLocation().y, 
                     player.GetDimensions().width, player.GetDimensions().height);
-
 
         // draw bullets
         if (bullet.IsAlive())
