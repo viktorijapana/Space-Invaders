@@ -3,12 +3,12 @@ using System.Drawing;
 
 public class Bullet : Actor
 {	
-	public Bullet() : base()
+	public Bullet(int speed) : base()
 	{
 		sprite = new Bitmap(Space_Invaders.Properties.Resources.bullet);
 		dimensions = (5, 10);
 
-		speed = 18;
+		this.speed = speed;
 		isAlive = false;
 	}
 

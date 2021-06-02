@@ -9,11 +9,11 @@ public class GameWindow : Form
     readonly Player player;
     readonly Bullet bullet;         // player bullet
     readonly Bullet lazer;          // enemy bullet
-    readonly AlienArray aliens;
     readonly RandomShip ship;
+    AlienArray aliens;
     bool goLeft, goRight, shoot = false;
 
-    public GameWindow()
+    public GameWindow(int lives)
     {
         // Initialization
         Text = "Space Invaders";
@@ -35,12 +35,12 @@ public class GameWindow : Form
         gameTimer.Tick += new EventHandler(OnTick);
 
         // Classes
-        player = new Player((ClientSize.Width / 2, ClientSize.Height), 3);
+        player = new Player((ClientSize.Width / 2, ClientSize.Height), lives);
         player.GameOver += GameOver;
-        bullet = new Bullet();
-        lazer = new Bullet();
-        aliens = new AlienArray(ClientSize);
+        bullet = new Bullet(30);
+        lazer = new Bullet(18);
         ship = new RandomShip(ClientSize);
+        aliens = new AlienArray(ClientSize, (0, 130));
     }
 
     private void OnTick(object sender, EventArgs e)
@@ -74,20 +74,20 @@ public class GameWindow : Form
         //if (!lazer.IsAlive())
         //    lazer.Shoot(aliens.GetAttackingAlien().GetMuzzleLocation());
 
-        //if (lazer.IsAlive())
-        //{
-        //    lazer.Move(1, ClientSize);
-        //    if (player.IsHit(lazer))
-        //        lazer.Destroy();
-        //}
+        if (lazer.IsAlive())
+        {
+            lazer.Move(1, ClientSize);
+            if (player.IsHit(lazer))
+                lazer.Destroy();
+        }
 
         if (ship.IsAlive())
             ship.Move();
 
-        if (aliens.IsDestroyed())
-            aliens.Reset();
+        if (aliens.IsDestroyed())           // new level starts, reset the alien array, at a lower position
+            aliens = new AlienArray(ClientSize, (0, 130));
 
-        if (!aliens.IsDestroyed() && aliens.IsAtBottom(ClientSize))
+        if (!aliens.IsDestroyed() && aliens.IsAtBottom())
             GameOver();
 
         Invalidate();       // redraw screen

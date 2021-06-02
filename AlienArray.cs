@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 
 
+// TODO reset: we can do it but just wiping this instance and creating a new one? Yeah, that would be best
 class AlienArray
 {
     public readonly int rows;
@@ -14,39 +15,43 @@ class AlienArray
     readonly int spaceY;                       // pixels between aliens vertically
     readonly (int width, int height) alienDimensions;
 
-
-    (float x, float y) start;
-    (float x, float y) location;               // the location of the top-left corner of the block of aliens
     int direction;                             // 1 = right, -1 = left
-    readonly int baseSpeed;                    // initial horizontal speed of the block
-    int speedX;                                // how fast the block moves horizontally
+    float speedX;                              // how fast the block moves horizontally
     int speedY;                                // how fast the block moves vertically
+    bool hasDescended;
 
     int aliveAliens;                           // number of alive aliens in the array currently
     int firstColumn;                           // the index of the first column that has at least one alien
     int lastColumn;                            // the index of the last column that has at least one alien
     int lastRow;                               // the index of the last row that has at least one alien
+    (float x, float y) firstColLoc;            // location of the left edge of the first full column of aliens
+    (float x, float y) lastColLoc;             // location of the right edge of the last full column of aliens
+    float lastRowLoc;                          // location of the bottom edge of the last full row of aliens
 
     readonly Timer moveTimer = new Timer();
 
-    public AlienArray(Size screenSize)
+
+    public AlienArray(Size screenSize, (float x, float y) startLoc)
     {
-        rows = 2;
-        columns = 2;
+        rows = 5;
+        columns = 11;
         block = new Alien[rows, columns];
         this.screenSize = screenSize;
         spaceX = 20;
         spaceY = 5;
 
-        start = (0, 130);
-        location = start;
         direction = 1;
-        baseSpeed = 15;
         speedX = 15;
         speedY = 35;
+        hasDescended = true;
+
+        firstColLoc = startLoc;
 
         FillArray();
         alienDimensions = block[0, 0].GetDimensions();
+
+        lastColLoc = ((columns * alienDimensions.width) + ((columns - 1) * spaceX), firstColLoc.y);
+        lastRowLoc = firstColLoc.y + (rows * alienDimensions.height) + ((rows - 1) * spaceY);
 
         aliveAliens = rows * columns;
         firstColumn = 0;
@@ -73,8 +78,8 @@ class AlienArray
 
     private void FillArray()
     {
-        float x = location.x;       // current location
-        float y = location.y;
+        float x = firstColLoc.x;       // starting location
+        float y = firstColLoc.y;
 
         for (int i = 0; i < rows; ++i)
         {
@@ -98,23 +103,27 @@ class AlienArray
 
     public void Move()
     {
-        if ((location.x + (direction * speedX) <= (0 - (firstColumn * (alienDimensions.width + 2 * spaceX)))) || 
-            (location.x + (direction * speedX) >= (screenSize.Width - ((lastColumn + 3) * (alienDimensions.width)))))
+        if ((firstColLoc.x <= 0 || lastColLoc.x >= screenSize.Width) && !hasDescended)
         {
-            location.y += speedY;
+            firstColLoc.y += speedY;
+            lastColLoc.y += speedY;
             direction *= -1;
             for (int i = 0; i < rows; ++i)
                 for (int j = 0; j < columns; ++j)
                     if (block[i, j].IsAlive())
                         block[i, j].Descend(speedY);
+            hasDescended = true;
         }
         else
-        {
-            location.x += (direction * spaceX);
+        {                    
+            firstColLoc.x += (direction * speedX);
+            lastColLoc.x += (direction * speedX);
             for (int i = 0; i < rows; ++i)
                 for (int j = 0; j < columns; ++j)
                     if (block[i, j].IsAlive())
                         block[i, j].Move(direction, speedX);
+
+            if (hasDescended) hasDescended = false;
         }
     }
 
@@ -154,15 +163,28 @@ class AlienArray
                     Alien hitAlien = block[i, j];
                     block[i, j].SetIsAlive(false);
                     aliveAliens--;
+                    speedX += 1;
 
-                    if (j == firstColumn && IsFirstColumnDestroyed())
-                        firstColumn++;
+                    if (j == firstColumn && aliveAliens != 0)
+                        while (IsFirstColumnDestroyed())
+                        {
+                            firstColumn++;
+                            firstColLoc.x = firstColLoc.x + alienDimensions.width + spaceX;
+                        }
 
-                    if (j == lastColumn && IsLastColumnDestroyed())
-                        lastColumn--;
+                    if (j == lastColumn && aliveAliens != 0)
+                        while (IsLastColumnDestroyed())
+                        {
+                            lastColumn--;
+                            lastColLoc.x = lastColLoc.x - alienDimensions.width - spaceX;
+                        }
 
-                    if (i == lastRow && IsLastRowDestroyed())
-                        lastRow--;
+                    if (i == lastRow && aliveAliens != 0)
+                        while (IsLastRowDestroyed())
+                        {
+                            lastRow--;
+                            lastRowLoc = lastRowLoc - alienDimensions.height - spaceY;
+                        }
 
                     return hitAlien;
                 }
@@ -189,32 +211,9 @@ class AlienArray
 
 
     // returns true if the bottom existing row of the alien array touches the bottom of the screen
-    public bool IsAtBottom(Size screenSize)
-    {
-        for (int j = 0; j < columns; ++j)
-            if (block[lastRow, j].IsAlive() && block[lastRow, j].GetLocation().y + block[lastRow, j].GetDimensions().height == screenSize.Height)
-                return true;
-        return false;
-    }
+    public bool IsAtBottom() => lastRowLoc >= screenSize.Height;
 
 
     // returns true if all the aliens in the array are destroyed
     public bool IsDestroyed() => aliveAliens == 0;
-
-    // put the aliens back at the start of the new level
-    public void Reset()
-    {
-        moveTimer.Enabled = false;
-
-        speedX = baseSpeed;
-        location.x = start.x + 200;
-        location.y = start.y;
-        start = location;
-
-        for (int i = 0; i < rows; ++i)
-            for (int j = 0; j < columns; ++j)
-                block[i, j].SetIsAlive(true);
-
-        moveTimer.Enabled = true;
-    }
 }

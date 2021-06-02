@@ -18,7 +18,7 @@ class Alien : Actor
 
 
     /*  -- MOVEMENT --  */
-    public void Move(int direction, int speed)
+    public void Move(int direction, float speed)
     {
         location.x += (direction * speed);
         muzzleLocation = (location.x + (dimensions.width / 2), location.y);

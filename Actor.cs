@@ -36,7 +36,7 @@ public class Actor
     {
 		float x = bullet.GetLocation().x;
 		float y = bullet.GetLocation().y;
-		if (x >= location.x && x <= location.x + dimensions.width && y <= location.y + dimensions.height && y >= location.y)
+		if (x >= location.x + 1 && x <= location.x + dimensions.width && y <= location.y + dimensions.height && y >= location.y)
 		{
 			isAlive = false;
 			return true;
