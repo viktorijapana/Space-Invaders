@@ -33,7 +33,7 @@ public class Actor
 	public bool IsAlive() => isAlive;
 
 	public virtual bool IsHit(Bullet bullet)
-    {
+	{
 		float x = bullet.GetLocation().x;
 		float y = bullet.GetLocation().y;
 		if (x >= location.x + 1 && x <= location.x + dimensions.width && y <= location.y + dimensions.height && y >= location.y)

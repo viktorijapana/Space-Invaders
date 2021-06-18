@@ -17,7 +17,7 @@ class Player : Actor
 
         // Movement
         location = (start.x, start.y - dimensions.height);
-        speed = 40;
+        speed = 10;
 
         // Attack
         score = 0;

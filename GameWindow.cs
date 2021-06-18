@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Diagnostics;
 using System.Windows.Forms;
 
 
@@ -11,7 +12,12 @@ public class GameWindow : Form
     readonly Bullet lazer;          // enemy bullet
     readonly RandomShip ship;
     AlienArray aliens;
+    Bunker[] bunkers;
     bool goLeft, goRight, shoot = false;
+
+    readonly Label scoreText;
+    readonly Label livesText;
+
 
     public GameWindow(int lives)
     {
@@ -29,7 +35,7 @@ public class GameWindow : Form
         gameTimer = new Timer()
         {
             Enabled = true,
-            Interval = 10
+            Interval = 2
         };
 
         gameTimer.Tick += new EventHandler(OnTick);
@@ -41,6 +47,39 @@ public class GameWindow : Form
         lazer = new Bullet(18);
         ship = new RandomShip(ClientSize);
         aliens = new AlienArray(ClientSize, (0, 130));
+        bunkers = new Bunker[4];
+        for (int i = 0; i < bunkers.Length; ++i)
+            bunkers[i] = new Bunker( (120 + i * 230, 500) );
+
+        // UI
+        Font textFont = new Font("Segoe UI", 30F, FontStyle.Bold, GraphicsUnit.Point);
+
+        scoreText = new Label()
+        {
+            Location = new Point(50, 20),
+            Size = new Size(255, 57),
+            Text = $"SCORE: {player.GetScore()}",
+            TextAlign = ContentAlignment.TopLeft,
+            Font = textFont,
+            BackColor = Color.Black,
+            ForeColor = Color.White
+        };
+
+        livesText = new Label()
+        {
+            Location = new Point((int)(ClientSize.Width - textFont.Size * 8), 20),
+            Size = new Size(255, 57),
+            Text = $"LIVES: {player.GetLives()}",
+            TextAlign = ContentAlignment.TopLeft,
+            Font = textFont,
+            BackColor = Color.Black,
+            ForeColor = Color.White
+        };
+
+
+        // add labels to the form
+        Controls.Add(scoreText);
+        Controls.Add(livesText);
     }
 
     private void OnTick(object sender, EventArgs e)
@@ -69,16 +108,24 @@ public class GameWindow : Form
                 bullet.Destroy();
                 player.AddScore(ship.GetPoints());
             }
+
+            foreach (Bunker bunker in bunkers)
+                if (bunker.IsHit(bullet) != null)
+                    bullet.Destroy();
         }
 
-        //if (!lazer.IsAlive())
-        //    lazer.Shoot(aliens.GetAttackingAlien().GetMuzzleLocation());
+        if (!lazer.IsAlive())
+            lazer.Shoot(aliens.GetAttackingAlien().GetMuzzleLocation());
 
         if (lazer.IsAlive())
         {
             lazer.Move(1, ClientSize);
             if (player.IsHit(lazer))
                 lazer.Destroy();
+
+            foreach (Bunker bunker in bunkers)
+                if (bunker.IsHit(lazer) != null)
+                    lazer.Destroy();
         }
 
         if (ship.IsAlive())
@@ -96,33 +143,11 @@ public class GameWindow : Form
     private void GameOver()
     {
         gameTimer.Enabled = false;
+        GameOverScreen g = new GameOverScreen();
+        g.Show();
     }
 
 
-
-    /* --  DRAWING GRAPHICS  -- */
-    private void DrawHUD(Graphics g)
-    {
-        int y = 20;     // the distance from the top of the screen
-        Font drawFont = new Font("Segoe UI", 30);
-        SolidBrush whiteBrush = new SolidBrush(Color.White);
-        SolidBrush greenBrush = new SolidBrush(Color.Green);
-
-        g.DrawString("SCORE:", drawFont, whiteBrush, new Point(50, y));
-        g.DrawString(player.GetScore().ToString(), drawFont, greenBrush, new Point((int)drawFont.Size * 7, y));
-
-        g.DrawString("LIVES:", drawFont, whiteBrush, new Point((int)(ClientSize.Width - drawFont.Size * 8), y));
-        g.DrawString(player.GetLives().ToString(), drawFont, greenBrush, new Point((int)(ClientSize.Width - drawFont.Size * 3), y));
-    }
-
-    private void DrawAliens(Graphics g)
-    {
-        for (int i = 0; i < aliens.rows; ++i)
-            for (int j = 0; j < aliens.columns; ++j)
-                if (aliens[i, j].IsAlive())
-                    g.DrawImage(aliens[i, j].GetSprite(), aliens[i, j].GetLocation().x, aliens[i, j].GetLocation().y,
-                                aliens[i, j].GetDimensions().width, aliens[i, j].GetDimensions().height);
-    }
 
     protected override void OnPaintBackground(PaintEventArgs e)
     {
@@ -133,7 +158,6 @@ public class GameWindow : Form
     protected override void OnPaint(PaintEventArgs e)
     {
         Graphics g = e.Graphics;
-        DrawHUD(g);
 
         // draw the player
         g.DrawImage(player.GetSprite(), player.GetLocation().x, player.GetLocation().y, 
@@ -149,9 +173,18 @@ public class GameWindow : Form
                         lazer.GetDimensions().width, lazer.GetDimensions().height);
 
         // draw bunkers
+        foreach (Bunker bunker in bunkers)
+            foreach (BunkerPiece piece in bunker.GetPieces())
+                if (piece.IsAlive())
+                    g.DrawImage(piece.GetSprite(), piece.GetLocation().x, piece.GetLocation().y,
+                                piece.GetDimensions().width, piece.GetDimensions().height);
 
         // draw aliens
-        DrawAliens(g);
+        for (int i = 0; i < aliens.rows; ++i)
+            for (int j = 0; j < aliens.columns; ++j)
+                if (aliens[i, j].IsAlive())
+                    g.DrawImage(aliens[i, j].GetSprite(), aliens[i, j].GetLocation().x, aliens[i, j].GetLocation().y,
+                                aliens[i, j].GetDimensions().width, aliens[i, j].GetDimensions().height);
 
         // draw random ship
         if (ship.IsAlive())

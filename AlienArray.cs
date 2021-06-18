@@ -163,7 +163,6 @@ class AlienArray
                     Alien hitAlien = block[i, j];
                     block[i, j].SetIsAlive(false);
                     aliveAliens--;
-                    speedX += 1;
 
                     if (j == firstColumn && aliveAliens != 0)
                         while (IsFirstColumnDestroyed())
