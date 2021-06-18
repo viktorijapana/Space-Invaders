@@ -16,7 +16,6 @@ public class DifficultySelector : Form
     {
         Font buttonFont = new Font("Segoe UI", 18F, FontStyle.Regular, GraphicsUnit.Point);
 
-
         title = new Label() 
         {
             Location = new Point(0, 40),
@@ -37,7 +36,7 @@ public class DifficultySelector : Form
         };
         veryEasy.MouseHover += new EventHandler((sender, e) => OnHover(sender, e, veryEasy));
         veryEasy.MouseLeave += new EventHandler((sender, e) => EndHover(sender, e, veryEasy));
-        veryEasy.Click += new EventHandler((sender, e) => OnClick(sender, e, 5));
+        veryEasy.Click += new EventHandler((sender, e) => OnClick(sender, e, 5, 12));
 
         easy = new Button()
         {
@@ -49,7 +48,7 @@ public class DifficultySelector : Form
         };
         easy.MouseHover += new EventHandler((sender, e) => OnHover(sender, e, easy));
         easy.MouseLeave += new EventHandler((sender, e) => EndHover(sender, e, easy));
-        easy.Click += new EventHandler((sender, e) => OnClick(sender, e, 4));
+        easy.Click += new EventHandler((sender, e) => OnClick(sender, e, 4, 16));
 
         normal = new Button()
         {
@@ -61,7 +60,7 @@ public class DifficultySelector : Form
         };
         normal.MouseHover += new EventHandler((sender, e) => OnHover(sender, e, normal));
         normal.MouseLeave += new EventHandler((sender, e) => EndHover(sender, e, normal));
-        normal.Click += new EventHandler((sender, e) => OnClick(sender, e, 3));
+        normal.Click += new EventHandler((sender, e) => OnClick(sender, e, 3, 20));
 
         hard = new Button()
         {
@@ -73,7 +72,7 @@ public class DifficultySelector : Form
         };
         hard.MouseHover += new EventHandler((sender, e) => OnHover(sender, e, hard));
         hard.MouseLeave += new EventHandler((sender, e) => EndHover(sender, e, hard));
-        hard.Click += new EventHandler((sender, e) => OnClick(sender, e, 2));
+        hard.Click += new EventHandler((sender, e) => OnClick(sender, e, 2, 26));
 
         veryHard = new Button()
         {
@@ -85,7 +84,7 @@ public class DifficultySelector : Form
         };
         veryHard.MouseHover += new EventHandler((sender, e) => OnHover(sender, e, veryHard));
         veryHard.MouseLeave += new EventHandler((sender, e) => EndHover(sender, e, veryHard));
-        veryHard.Click += new EventHandler((sender, e) => OnClick(sender, e, 1));
+        veryHard.Click += new EventHandler((sender, e) => OnClick(sender, e, 1, 32));
 
 
         Name = "Space Invaders";
@@ -100,6 +99,9 @@ public class DifficultySelector : Form
         Controls.Add(normal);
         Controls.Add(hard);
         Controls.Add(veryHard);
+
+        // event to shut down the entire program when the window is closed
+        FormClosing += new FormClosingEventHandler(DifficultySelector_FormClosing);
     }
 
 
@@ -113,10 +115,15 @@ public class DifficultySelector : Form
         b.ForeColor = Color.Black;
     }
 
-    private void OnClick(object sender, EventArgs e, int lives)
+    private void OnClick(object sender, EventArgs e, int lives, int lazerSpeed)
     {
-        GameWindow game = new GameWindow(lives);
-        Close();
+        GameWindow game = new GameWindow(lives, lazerSpeed);
+        Hide();
         game.Show();
+    }
+
+    private void DifficultySelector_FormClosing(object sender, FormClosingEventArgs e)
+    {
+        Application.Exit();
     }
 }

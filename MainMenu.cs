@@ -136,6 +136,9 @@ public class MainMenu : Form
         Controls.Add(alienPic2Text);
         Controls.Add(alienPic3);
         Controls.Add(alienPic3Text);
+
+        // event to shut down the entire program when the window is closed
+        FormClosing += new FormClosingEventHandler(MainMenu_FormClosing);
     }
 
 
@@ -154,5 +157,10 @@ public class MainMenu : Form
         DifficultySelector ds = new DifficultySelector();
         Hide();
         ds.Show();
+    }
+
+    private void MainMenu_FormClosing(object sender, FormClosingEventArgs e)
+    {
+        Application.Exit();
     }
 }

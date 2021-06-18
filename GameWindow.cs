@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Diagnostics;
 using System.Windows.Forms;
 
 
@@ -10,16 +9,17 @@ public class GameWindow : Form
     readonly Player player;
     readonly Bullet bullet;         // player bullet
     readonly Bullet lazer;          // enemy bullet
-    readonly RandomShip ship;
     AlienArray aliens;
-    Bunker[] bunkers;
+    readonly Bunker[] bunkers;
+    readonly RandomShip ship;
     bool goLeft, goRight, shoot = false;
+    float alienStart;               // the vertical position of the alien array at the start of the level
 
     readonly Label scoreText;
     readonly Label livesText;
 
 
-    public GameWindow(int lives)
+    public GameWindow(int lives, int lazerSpeed)
     {
         // Initialization
         Text = "Space Invaders";
@@ -35,24 +35,26 @@ public class GameWindow : Form
         gameTimer = new Timer()
         {
             Enabled = true,
-            Interval = 2
+            Interval = 5
         };
 
         gameTimer.Tick += new EventHandler(OnTick);
 
+        alienStart = 130;
+
         // Classes
-        player = new Player((ClientSize.Width / 2, ClientSize.Height), lives);
-        player.GameOver += GameOver;
+        player = new Player( ClientSize.Width / 2, ClientSize.Height, lives );
         bullet = new Bullet(30);
-        lazer = new Bullet(18);
+        lazer = new Bullet(lazerSpeed);
+        aliens = new AlienArray(ClientSize, 0, alienStart);
         ship = new RandomShip(ClientSize);
-        aliens = new AlienArray(ClientSize, (0, 130));
         bunkers = new Bunker[4];
         for (int i = 0; i < bunkers.Length; ++i)
-            bunkers[i] = new Bunker( (120 + i * 230, 500) );
+            bunkers[i] = new Bunker(120 + i * 230, 500);
+
 
         // UI
-        Font textFont = new Font("Segoe UI", 30F, FontStyle.Bold, GraphicsUnit.Point);
+        Font labelFont = new Font("Segoe UI", 30F, FontStyle.Bold, GraphicsUnit.Point);
 
         scoreText = new Label()
         {
@@ -60,18 +62,18 @@ public class GameWindow : Form
             Size = new Size(255, 57),
             Text = $"SCORE: {player.GetScore()}",
             TextAlign = ContentAlignment.TopLeft,
-            Font = textFont,
+            Font = labelFont,
             BackColor = Color.Black,
             ForeColor = Color.White
         };
 
         livesText = new Label()
         {
-            Location = new Point((int)(ClientSize.Width - textFont.Size * 8), 20),
+            Location = new Point((int)(ClientSize.Width - labelFont.Size * 8), 20),
             Size = new Size(255, 57),
             Text = $"LIVES: {player.GetLives()}",
             TextAlign = ContentAlignment.TopLeft,
-            Font = textFont,
+            Font = labelFont,
             BackColor = Color.Black,
             ForeColor = Color.White
         };
@@ -80,6 +82,9 @@ public class GameWindow : Form
         // add labels to the form
         Controls.Add(scoreText);
         Controls.Add(livesText);
+
+        // event to shut down the entire program when the window is closed
+        FormClosing += new FormClosingEventHandler(GameWindow_FormClosing);
     }
 
     private void OnTick(object sender, EventArgs e)
@@ -90,49 +95,18 @@ public class GameWindow : Form
         if (goRight)
             player.Move(1, ClientSize);
 
-        if (shoot && !bullet.IsAlive())
-            bullet.Shoot(player.GetMuzzleLocation());
+        BulletAction();
 
-        if (bullet.IsAlive())
-        {
-            bullet.Move(-1, ClientSize);
-            Alien hitAlien = aliens.IsHit(bullet);
-            if (hitAlien != null)
-            {
-                bullet.Destroy();
-                player.AddScore(hitAlien.GetPoints());
-            }
-
-            if (ship.IsHit(bullet))
-            {
-                bullet.Destroy();
-                player.AddScore(ship.GetPoints());
-            }
-
-            foreach (Bunker bunker in bunkers)
-                if (bunker.IsHit(bullet) != null)
-                    bullet.Destroy();
-        }
-
-        if (!lazer.IsAlive())
-            lazer.Shoot(aliens.GetAttackingAlien().GetMuzzleLocation());
-
-        if (lazer.IsAlive())
-        {
-            lazer.Move(1, ClientSize);
-            if (player.IsHit(lazer))
-                lazer.Destroy();
-
-            foreach (Bunker bunker in bunkers)
-                if (bunker.IsHit(lazer) != null)
-                    lazer.Destroy();
-        }
+        LazerAction();
 
         if (ship.IsAlive())
             ship.Move();
 
-        if (aliens.IsDestroyed())           // new level starts, reset the alien array, at a lower position
-            aliens = new AlienArray(ClientSize, (0, 130));
+        if (aliens.IsDestroyed())             // new level starts, reset the alien array, at a lower position
+        {
+            alienStart += 100;
+            aliens = new AlienArray(ClientSize, 0, alienStart);
+        }
 
         if (!aliens.IsDestroyed() && aliens.IsAtBottom())
             GameOver();
@@ -147,12 +121,75 @@ public class GameWindow : Form
         g.Show();
     }
 
+    private void GameWindow_FormClosing(object sender, FormClosingEventArgs e)
+    {
+        Application.Exit();
+    }
 
 
+
+    /* --  ACTION  -- */
+    void BulletAction()
+    {
+        if (shoot && !bullet.IsAlive())
+            bullet.Shoot(player.GetMuzzleLocation());
+
+        if (bullet.IsAlive())
+        {
+            bullet.Move(-1, ClientSize);
+            Alien hitAlien = aliens.IsHit(bullet);
+            if (hitAlien != null)
+            {
+                bullet.Destroy();
+                player.AddScore(hitAlien.GetPoints());
+                scoreText.Text = $"SCORE: {player.GetScore()}";
+                scoreText.Refresh();
+            }
+
+            if (ship.IsHit(bullet))
+            {
+                bullet.Destroy();
+                player.AddScore(ship.GetPoints());
+                scoreText.Text = $"SCORE: {player.GetScore()}";
+                scoreText.Refresh();
+            }
+
+            foreach (Bunker bunker in bunkers)
+                if (bunker.IsHit(bullet))
+                    bullet.Destroy();
+        }
+    }
+
+    void LazerAction()
+    {
+        if (!lazer.IsAlive())
+            lazer.Shoot(aliens.GetAttackingAlien().GetMuzzleLocation());
+
+        if (lazer.IsAlive())
+        {
+            lazer.Move(1, ClientSize);
+            if (player.IsHit(lazer))
+            {
+                lazer.Destroy();
+                player.TakeDamage();
+                livesText.Text = $"LIVES: {player.GetLives()}";
+                livesText.Refresh();
+                if (player.GetLives() == 0)
+                    GameOver();
+            }
+
+            foreach (Bunker bunker in bunkers)
+                if (bunker.IsHit(lazer))
+                    lazer.Destroy();
+        }
+    }
+
+
+    /* --  GRAPHICS  -- */
     protected override void OnPaintBackground(PaintEventArgs e)
     {
         // do nothing
-        // overriden to eliminate the flicker when we redraw the screen
+        // overriden to eliminate the flicker when the screen is redrawn
     }
 
     protected override void OnPaint(PaintEventArgs e)

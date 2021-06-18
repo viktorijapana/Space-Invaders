@@ -2,29 +2,30 @@
 
 public class BunkerPiece : Actor
 {
-	int health = 3;
+	int health;
 
-	public BunkerPiece((float x, float y) location, Bitmap sprite)
+	public BunkerPiece(Bitmap sprite, float startX, float startY)
 	{
-		this.location = location;
 		this.sprite = sprite;
-		dimensions = (35, 30);
+		width = 35;
+		height = 30;
+
+		x = startX;
+		y = startY;
+
+		health = 3;
 		isAlive = true;
 	}
 
+	public int GetHealth() => health;
 
-    public override bool IsHit(Bullet bullet)
+    public void TakeDamage()
     {
-		float x = bullet.GetLocation().x;
-		float y = bullet.GetLocation().y;
-		if (x >= location.x + 1 && x <= location.x + dimensions.width && y <= location.y + dimensions.height && y >= location.y)
-		{
-			health--;
-			if (health == 0)
-				isAlive = false;
+		health--;
+    }
 
-			return true;
-		}
-		return false;
-	}
+	public void Kill()
+    {
+		isAlive = false;
+    }
 }

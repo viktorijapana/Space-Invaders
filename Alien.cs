@@ -4,13 +4,14 @@ class Alien : Actor
 {
     readonly int points;                             // how many points this alien is worth
 
-
-    public Alien(Bitmap sprite, (float x, float y) location, int points) : base()
+    public Alien(Bitmap sprite, float startX, float startY, int points) : base()
     {
         this.sprite = sprite;
-        dimensions = (40, 25);
+        width = 40;
+        height = 25;
 
-        this.location = location;
+        x = startX;
+        y = startY;
 
         isAlive = true;
         this.points = points;
@@ -20,13 +21,14 @@ class Alien : Actor
     /*  -- MOVEMENT --  */
     public void Move(int direction, float speed)
     {
-        location.x += (direction * speed);
-        muzzleLocation = (location.x + (dimensions.width / 2), location.y);
+        x += (direction * speed);
+        muzzleX = x + (width / 2);
+        muzzleY = y;
     }
     
     public void Descend(int speed)
     {
-        location.y += speed;
+        y += speed;
     }
 
 
@@ -34,8 +36,8 @@ class Alien : Actor
     /*  -- ATTACK --  */
     public int GetPoints() => points;
 
-    public void SetIsAlive(bool state)
+    public void Kill()
     {
-        isAlive = state;
+        isAlive = false;
     }
 }

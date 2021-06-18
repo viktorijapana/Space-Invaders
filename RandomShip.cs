@@ -17,10 +17,12 @@ public class RandomShip : Actor
 		rand = new Random();
 
 		sprite = new Bitmap(Space_Invaders.Properties.Resources.random_spaceship);
-		dimensions = (40, 25);
+		width = 40;
+		height = 25;
 
 		start = screenSize.Width;
-		location = (start, 90);
+		x = start;
+		y = 90;
 		speed = 10;
 
 		isAlive = false;
@@ -44,12 +46,12 @@ public class RandomShip : Actor
 
     public void Move()
     {
-		if (location.x >= (-1) * dimensions.width)
-			location.x -= speed;
+		if (x >= (-1) * width)
+			x -= speed;
 		else
         {
 			isAlive = false;
-			location.x = start;
+			x = start;
         }
     }
 

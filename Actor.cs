@@ -3,44 +3,46 @@
 public class Actor
 {
 	protected Bitmap sprite;
-	protected (int width, int height) dimensions;    // dimensions of the sprite
+	protected int width;
+	protected int height;
 
-	protected (float x, float y) location;
+	protected float x;
+	protected float y;
 	protected int speed;
 
-	protected (float x, float y) muzzleLocation;
+	protected float muzzleX;
+	protected float muzzleY;
 	protected bool isAlive;
 
 	public Actor()
 	{
-		muzzleLocation = (location.x + (dimensions.width / 2), location.y);
+		muzzleX = x + (width / 2);
+		muzzleY = y;
 	}
 
 
 	/* --  DRAWING  -- */
 	public Bitmap GetSprite() => sprite;
 
-	public (int width, int height) GetDimensions() => dimensions;
+	public (int width, int height) GetDimensions() => (width, height);
 
 
 	/* --  MOVEMENT  -- */
-	public (float x, float y) GetLocation() => location;
+	public (float x, float y) GetLocation() => (x, y);
 
 
 	/* --  ATTACK  -- */
-	public (float x, float y) GetMuzzleLocation() => muzzleLocation;
+	public (float x, float y) GetMuzzleLocation() => (muzzleX, muzzleY);
 
 	public bool IsAlive() => isAlive;
 
-	public virtual bool IsHit(Bullet bullet)
+	public bool IsHit(Bullet bullet)
 	{
-		float x = bullet.GetLocation().x;
-		float y = bullet.GetLocation().y;
-		if (x >= location.x + 1 && x <= location.x + dimensions.width && y <= location.y + dimensions.height && y >= location.y)
-		{
-			isAlive = false;
+		float bulletX = bullet.GetLocation().x;
+		float bulletY = bullet.GetLocation().y;
+		if (bulletX >= x + 1 && bulletX <= x + width && bulletY <= y + height && bulletY >= y)
 			return true;
-		}
+		
 		return false;
 	}
 }

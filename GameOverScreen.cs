@@ -45,7 +45,7 @@ public class GameOverScreen : Form
         };
         quit.MouseHover += new EventHandler((sender, e) => OnHover(sender, e, quit));
         quit.MouseLeave += new EventHandler((sender, e) => EndHover(sender, e, quit));
-        quit.Click += new EventHandler((sender, e) => Close());
+        quit.Click += new EventHandler((sender, e) => Application.Exit());
 
 
         BackColor = Color.Black;
@@ -68,6 +68,6 @@ public class GameOverScreen : Form
 
     private void Restart(object sender, EventArgs e)
     {
-
+        
     }
 }

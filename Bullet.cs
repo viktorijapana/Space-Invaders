@@ -1,12 +1,12 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 
 public class Bullet : Actor
 {	
 	public Bullet(int speed) : base()
 	{
 		sprite = new Bitmap(Space_Invaders.Properties.Resources.bullet);
-		dimensions = (5, 10);
+		width = 5;
+		height = 10;
 
 		this.speed = speed;
 		isAlive = false;
@@ -14,18 +14,19 @@ public class Bullet : Actor
 
 
 	/* --  MOVEMENT  -- */
-	public void Shoot((float x, float y) spawnPoint)
+	public void Shoot( (float x, float y) spawn )
     {
-		location = spawnPoint;
+		x = spawn.x;
+		y = spawn.y;
 		isAlive = true;
 	}
 
 	public void Move(int direction, Size screenSize)				// +1 = downwards, -1 = upwards
     {
-		if (location.y <= 0 || location.y >= screenSize.Height)
+		if (y <= 0 || y >= screenSize.Height)
 			isAlive = false;
 		else
-			location.y += (direction * speed);
+			y += (direction * speed);
 	}
 
 
