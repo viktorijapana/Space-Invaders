@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
+
 public class MainMenu : Form
 {
     readonly Label title;

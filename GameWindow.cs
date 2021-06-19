@@ -97,14 +97,14 @@ public class GameWindow : Form
 
         BulletAction();
 
-        LazerAction();
+        //LazerAction();
 
         if (ship.IsAlive())
             ship.Move();
 
         if (aliens.IsDestroyed())             // New level starts, reset the alien array, at a lower position
         {
-            alienStart += 100;
+            alienStart += 50;
             aliens = new AlienArray(ClientSize, 0, alienStart);
         }
 

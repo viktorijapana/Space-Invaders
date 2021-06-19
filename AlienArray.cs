@@ -119,6 +119,7 @@ class AlienArray
         if ((firstColX <= 0 || lastColX >= screenSize.Width) && !hasDescended)
         {
             firstColY += speedY;
+            lastRowY += speedY;
             direction *= -1;
             for (int i = 0; i < rows; ++i)
                 for (int j = 0; j < columns; ++j)
