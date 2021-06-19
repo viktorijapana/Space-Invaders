@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
+
 public class GameOverScreen : Form
 {
     readonly Label title;
@@ -24,8 +25,8 @@ public class GameOverScreen : Form
 
         restart = new Label() 
         {
-            Location = new Point(171, 157),
-            Size = new Size(158, 46),
+            Location = new Point(150, 157),
+            Size = new Size(200, 45),
             Text = "Try Again",
             TextAlign = ContentAlignment.TopCenter,
             Font = textFont,
@@ -37,8 +38,8 @@ public class GameOverScreen : Form
 
         quit = new Label()
         {
-            Location = new System.Drawing.Point(180, 226),
-            Size = new System.Drawing.Size(137, 46),
+            Location = new Point(180, 226),
+            Size = new Size(200, 45),
             Text = "Give Up",
             Font = textFont,
             ForeColor = Color.White
@@ -48,12 +49,14 @@ public class GameOverScreen : Form
         quit.Click += new EventHandler((sender, e) => Application.Exit());
 
 
+        // Form properties
         BackColor = Color.Black;
         ClientSize = new Size(515, 355);
+        StartPosition = FormStartPosition.CenterScreen;
+        FormBorderStyle = FormBorderStyle.None;
         Controls.Add(quit);
         Controls.Add(restart);
         Controls.Add(title);
-        FormBorderStyle = FormBorderStyle.None;
     }
 
     private void OnHover(object sender, EventArgs e, Label l)
@@ -68,6 +71,6 @@ public class GameOverScreen : Form
 
     private void Restart(object sender, EventArgs e)
     {
-        
+        //RestartGame();
     }
 }

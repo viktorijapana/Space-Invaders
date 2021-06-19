@@ -2,9 +2,10 @@
 
 public class Bunker
 {
-	readonly Bitmap[] bunkerImages;
 	readonly BunkerPiece[] pieces;
 
+	// Graphics
+	readonly Bitmap[] bunkerImages;
 
 	public Bunker(float startX, float startY)
 	{
@@ -44,6 +45,7 @@ public class Bunker
 	public BunkerPiece[] GetPieces() => pieces;
 
 
+	/*  --  ACTION  --  */
 	public bool IsHit(Bullet bullet)
 	{
 		for (int i = 0; i < pieces.Length; ++i)

@@ -5,34 +5,39 @@ using System.Windows.Forms;
 
 class AlienArray
 {
+    readonly Alien[,] block;
+
+    // Graphics
     public readonly int rows;
     public readonly int columns;
-    readonly Alien[,] block;
     readonly Size screenSize;
     readonly int spaceX;                       // pixels between aliens horizontally
     readonly int spaceY;                       // pixels between aliens vertically
-    readonly int width;
-    readonly int height;
+    readonly int width;                        // width of a single alien
+    readonly int height;                       // height of a single alien
 
+    // Movement
     int direction;                             // 1 = right, -1 = left
-    float speedX;                              // how fast the block moves horizontally
-    int speedY;                                // how fast the block moves vertically
+    readonly float speedX;                     // how fast the block moves horizontally
+    readonly int speedY;                       // how fast the block moves vertically
     bool hasDescended;
 
+    // Properties
     int aliveAliens;                           // number of alive aliens in the array currently
     int firstColumn;                           // the index of the first column that has at least one alien
     int lastColumn;                            // the index of the last column that has at least one alien
-    int lastRow;                               // the index of the last row that has at least one alien4
+    int lastRow;                               // the index of the last row that has at least one alien
     float firstColX;                           // location of the left edge of the first full column of aliens
     float firstColY;
     float lastColX;                            // location of the right edge of the last full column of aliens
     float lastRowY;                            // location of the bottom edge of the last full row of aliens
 
-    readonly Timer moveTimer = new Timer();
+    readonly Timer moveTimer;
 
 
     public AlienArray(Size screenSize, float startX, float startY)
     {
+        // Graphics
         rows = 5;
         columns = 11;
         block = new Alien[rows, columns];
@@ -40,11 +45,13 @@ class AlienArray
         spaceX = 20;
         spaceY = 5;
 
+        // Movement
         direction = 1;
         speedX = 15;
         speedY = 35;
         hasDescended = true;
 
+        // Properties
         firstColX = startX;
         firstColY = startY;
 
@@ -60,8 +67,12 @@ class AlienArray
         lastColumn = columns - 1;
         lastRow = rows - 1;
 
-        moveTimer.Enabled = true;
-        moveTimer.Interval = 700;
+        moveTimer = new Timer
+        {
+            Enabled = true,
+            Interval = 700
+        };
+
         moveTimer.Tick += new EventHandler(Tick);
     }
 
@@ -124,7 +135,8 @@ class AlienArray
                     if (block[i, j].IsAlive())
                         block[i, j].Move(direction, speedX);
 
-            if (hasDescended) hasDescended = false;
+            if (hasDescended) 
+                hasDescended = false;
         }
     }
 
@@ -164,6 +176,8 @@ class AlienArray
                     block[i, j].Kill();
                     aliveAliens--;
 
+                    // Check if the last columns and last row of the block have been destroyed,
+                    // to adjust for hitting the end of the screen
                     if (j == firstColumn && aliveAliens != 0)
                         while (IsFirstColumnDestroyed())
                         {
@@ -184,15 +198,13 @@ class AlienArray
                             lastRow--;
                             lastRowY = lastRowY - height - spaceY;
                         }
-
                     return hitAlien;
                 }
-
         return null;
     }
 
 
-    // returns a random alien in the array that will fire the lazer
+    // Returns a random alien in the array that will fire the lazer
     public Alien GetAttackingAlien()
     {
         Random rand = new Random();
@@ -209,10 +221,10 @@ class AlienArray
     }
 
 
-    // returns true if the bottom existing row of the alien array touches the bottom of the screen
+    // Returns true if the bottom existing row of the alien array touches the bottom of the screen
     public bool IsAtBottom() => lastRowY >= screenSize.Height;
 
 
-    // returns true if all the aliens in the array are destroyed
+    // Returns true if all the aliens in the array are destroyed
     public bool IsDestroyed() => aliveAliens == 0;
 }

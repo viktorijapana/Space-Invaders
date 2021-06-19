@@ -120,6 +120,7 @@ public class MainMenu : Form
         };
 
 
+        // Form properties
         Name = "Space Invaders";
         BackColor = Color.Black;
         ClientSize = new Size(1030, 710);
@@ -137,7 +138,7 @@ public class MainMenu : Form
         Controls.Add(alienPic3);
         Controls.Add(alienPic3Text);
 
-        // event to shut down the entire program when the window is closed
+        // Event to shut down the entire program when the window is closed
         FormClosing += new FormClosingEventHandler(MainMenu_FormClosing);
     }
 

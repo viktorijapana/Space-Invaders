@@ -87,6 +87,7 @@ public class DifficultySelector : Form
         veryHard.Click += new EventHandler((sender, e) => OnClick(sender, e, 1, 32));
 
 
+        // Form properties
         Name = "Space Invaders";
         BackColor = Color.Black;
         ClientSize = new Size(1030, 710);
@@ -100,7 +101,7 @@ public class DifficultySelector : Form
         Controls.Add(hard);
         Controls.Add(veryHard);
 
-        // event to shut down the entire program when the window is closed
+        // Event to shut down the entire program when the window is closed
         FormClosing += new FormClosingEventHandler(DifficultySelector_FormClosing);
     }
 

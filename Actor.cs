@@ -2,26 +2,21 @@
 
 public class Actor
 {
+	// Graphics
 	protected Bitmap sprite;
-	protected int width;
-	protected int height;
+	protected int width;			// width of the sprite
+	protected int height;			// height of the sprite
 
-	protected float x;
-	protected float y;
-	protected int speed;
+	// Movement
+	protected float x;				// x coordinate of the actor's current location on the screen
+	protected float y;				// y coordinate of the actor's current location on the screen
 
-	protected float muzzleX;
-	protected float muzzleY;
+	// Action
 	protected bool isAlive;
 
-	public Actor()
-	{
-		muzzleX = x + (width / 2);
-		muzzleY = y;
-	}
 
 
-	/* --  DRAWING  -- */
+	/* --  GRAPHICS  -- */
 	public Bitmap GetSprite() => sprite;
 
 	public (int width, int height) GetDimensions() => (width, height);
@@ -31,9 +26,7 @@ public class Actor
 	public (float x, float y) GetLocation() => (x, y);
 
 
-	/* --  ATTACK  -- */
-	public (float x, float y) GetMuzzleLocation() => (muzzleX, muzzleY);
-
+	/* --  ACTION  -- */
 	public bool IsAlive() => isAlive;
 
 	public bool IsHit(Bullet bullet)

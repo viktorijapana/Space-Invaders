@@ -79,11 +79,11 @@ public class GameWindow : Form
         };
 
 
-        // add labels to the form
+        // Add labels to the form
         Controls.Add(scoreText);
         Controls.Add(livesText);
 
-        // event to shut down the entire program when the window is closed
+        // Event to shut down the entire program when the window is closed
         FormClosing += new FormClosingEventHandler(GameWindow_FormClosing);
     }
 
@@ -102,7 +102,7 @@ public class GameWindow : Form
         if (ship.IsAlive())
             ship.Move();
 
-        if (aliens.IsDestroyed())             // new level starts, reset the alien array, at a lower position
+        if (aliens.IsDestroyed())             // New level starts, reset the alien array, at a lower position
         {
             alienStart += 100;
             aliens = new AlienArray(ClientSize, 0, alienStart);
@@ -111,7 +111,7 @@ public class GameWindow : Form
         if (!aliens.IsDestroyed() && aliens.IsAtBottom())
             GameOver();
 
-        Invalidate();       // redraw screen
+        Invalidate();       // Redraw screen
     }
 
     private void GameOver()
@@ -188,19 +188,19 @@ public class GameWindow : Form
     /* --  GRAPHICS  -- */
     protected override void OnPaintBackground(PaintEventArgs e)
     {
-        // do nothing
-        // overriden to eliminate the flicker when the screen is redrawn
+        // Do nothing
+        // Overriden to eliminate the flicker when the screen is redrawn
     }
 
     protected override void OnPaint(PaintEventArgs e)
     {
         Graphics g = e.Graphics;
 
-        // draw the player
+        // Draw the player
         g.DrawImage(player.GetSprite(), player.GetLocation().x, player.GetLocation().y, 
                     player.GetDimensions().width, player.GetDimensions().height);
 
-        // draw bullets
+        // Draw bullets
         if (bullet.IsAlive())
             g.DrawImage(bullet.GetSprite(), bullet.GetLocation().x, bullet.GetLocation().y, 
                         bullet.GetDimensions().width, bullet.GetDimensions().height);
@@ -209,21 +209,21 @@ public class GameWindow : Form
             g.DrawImage(lazer.GetSprite(), lazer.GetLocation().x, lazer.GetLocation().y,
                         lazer.GetDimensions().width, lazer.GetDimensions().height);
 
-        // draw bunkers
+        // Draw bunkers
         foreach (Bunker bunker in bunkers)
             foreach (BunkerPiece piece in bunker.GetPieces())
                 if (piece.IsAlive())
                     g.DrawImage(piece.GetSprite(), piece.GetLocation().x, piece.GetLocation().y,
                                 piece.GetDimensions().width, piece.GetDimensions().height);
 
-        // draw aliens
+        // Draw aliens
         for (int i = 0; i < aliens.rows; ++i)
             for (int j = 0; j < aliens.columns; ++j)
                 if (aliens[i, j].IsAlive())
                     g.DrawImage(aliens[i, j].GetSprite(), aliens[i, j].GetLocation().x, aliens[i, j].GetLocation().y,
                                 aliens[i, j].GetDimensions().width, aliens[i, j].GetDimensions().height);
 
-        // draw random ship
+        // Draw random ship
         if (ship.IsAlive())
             g.DrawImage(ship.GetSprite(), ship.GetLocation().x, ship.GetLocation().y,
                         ship.GetDimensions().width, ship.GetDimensions().height);

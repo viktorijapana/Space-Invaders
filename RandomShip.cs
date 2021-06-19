@@ -4,27 +4,39 @@ using System.Windows.Forms;
 
 public class RandomShip : Actor
 {
-	readonly static int[] possible_points = { 50, 100, 150, 300 };
-	readonly int points;                             // how many points this alien is worth
+	// Randomizing
+	readonly Random rand;
+	readonly int low_time;
+	readonly int high_time;
+
+	// Movement
 	readonly int start;
 	readonly Timer launchTimer;
-	readonly Random rand;
-	readonly int low_time = 10000;
-	readonly int high_time = 100000;
+	readonly int speed;
+
+	// Action
+	readonly static int[] possible_points = { 50, 100, 150, 300 };
+	readonly int points;
+
 
 	public RandomShip(Size screenSize)
 	{
 		rand = new Random();
+		low_time = 10000;
+		high_time = 100000;
 
+		// Graphics
 		sprite = new Bitmap(Space_Invaders.Properties.Resources.random_spaceship);
 		width = 40;
 		height = 25;
 
+		// Movement
 		start = screenSize.Width;
 		x = start;
 		y = 90;
 		speed = 10;
 
+		// Action
 		isAlive = false;
 		points = possible_points[rand.Next(3)];
 
@@ -35,7 +47,7 @@ public class RandomShip : Actor
         };
 
         launchTimer.Tick += new EventHandler(Tick);
-    }
+	}
 
     private void Tick(object sender, EventArgs e)
     {
@@ -44,6 +56,7 @@ public class RandomShip : Actor
     }
 
 
+	/*  --  MOVEMENT  --  */
     public void Move()
     {
 		if (x >= (-1) * width)
@@ -56,5 +69,6 @@ public class RandomShip : Actor
     }
 
 
+	/*  --  ACTION  --  */
 	public int GetPoints() => points;
 }

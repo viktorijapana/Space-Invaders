@@ -1,14 +1,21 @@
 ﻿using System.Drawing;
 
 public class Bullet : Actor
-{	
-	public Bullet(int speed) : base()
+{
+	// Movement
+	readonly int speed;
+
+	public Bullet(int speed)
 	{
+		// Graphics
 		sprite = new Bitmap(Space_Invaders.Properties.Resources.bullet);
 		width = 5;
 		height = 10;
 
+		// Movement
 		this.speed = speed;
+
+		// Action
 		isAlive = false;
 	}
 
