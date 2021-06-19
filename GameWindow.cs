@@ -97,7 +97,7 @@ public class GameWindow : Form
 
         BulletAction();
 
-        LazerAction();
+        //LazerAction();
 
         if (ship.IsAlive())
             ship.Move();
