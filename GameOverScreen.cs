@@ -11,9 +11,9 @@ public class GameOverScreen : Form
     {
         Font textFont = new Font("Segoe UI", 30F, FontStyle.Bold, GraphicsUnit.Point);
 
-        text = new Label() 
+        text = new Label()
         {
-            Location = new Point(122, 120),
+            Location = new Point(122, 140),
             Size = new Size(255, 57),
             Text = "GAME OVER",
             TextAlign = ContentAlignment.TopCenter,

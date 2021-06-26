@@ -13,6 +13,7 @@ public class GameWindow : Form
     readonly Bunker[] bunkers;
     readonly RandomShip ship;
     bool goLeft, goRight, shoot = false;
+    bool explode = false;
     float alienStart;               // the vertical position of the alien array at the start of the level
 
     readonly Label scoreText;
@@ -31,7 +32,7 @@ public class GameWindow : Form
         // Drawing graphics
         SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.Opaque, true);
 
-        // Timer 
+        // Timers
         gameTimer = new Timer()
         {
             Enabled = true,
@@ -116,7 +117,7 @@ public class GameWindow : Form
 
     private void GameOver()
     {
-        gameTimer.Enabled = false;
+        gameTimer.Stop();
         GameOverScreen g = new GameOverScreen();
         g.Show();
     }
@@ -172,6 +173,7 @@ public class GameWindow : Form
             {
                 lazer.Destroy();
                 player.TakeDamage();
+                explode = true;
                 livesText.Text = $"LIVES: {player.GetLives()}";
                 livesText.Refresh();
                 if (player.GetLives() == 0)
@@ -227,6 +229,16 @@ public class GameWindow : Form
         if (ship.IsAlive())
             g.DrawImage(ship.GetSprite(), ship.GetLocation().x, ship.GetLocation().y,
                         ship.GetDimensions().width, ship.GetDimensions().height);
+
+
+        // if the player is hit, draw explosion and flash screen
+        if (explode)
+        {
+            g.DrawImage(Space_Invaders.Properties.Resources.explosion, lazer.GetLocation().x, lazer.GetLocation().y, 40, 40);
+            if (player.GetLives() != 0)
+                g.FillRectangle(new SolidBrush(Color.FromArgb(100, Color.Red)), 0, 0, width: ClientSize.Width, height: ClientSize.Height);
+            explode = false;
+        }
     }
 
 

@@ -228,4 +228,7 @@ class AlienArray
 
     // Returns true if all the aliens in the array are destroyed
     public bool IsDestroyed() => aliveAliens == 0;
+
+    // returns the index of the last full row of the array
+    public int GetLastRow() => lastRow;
 }
